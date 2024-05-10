@@ -1,0 +1,6 @@
+# Rename this file to config.conf, and fill the data with your terraform backend data
+
+resource_group_name  = "YOUR_DATA_HERE"
+storage_account_name = "YOUR_DATA_HERE"
+container_name       = "YOUR_DATA_HERE"
+key                  = "YOUR_DATA_HERE"

@@ -1,0 +1,40 @@
+*.class
+*.log
+
+# idea
+/.idea
+/target
+*.iml
+
+.venv/
+venv/
+venv_p/
+dist/
+*.egg-info/
+build/
+### Mac ###
+.DS_Store
+
+#configscript conf-s
+configscripts/*.conf
+
+#data folder
+data/
+
+#environment variables
+*.env
+
+#terraform
+terraform/.terraform*
+terraform/backend.conf
+terraform/terraform.plan
+terraform/terraform.tfvars
+terraform/output.txt
+terraform/terraform.auto.tfvars
+*.tfstate
+
+terraform-cluster/
+
+#misc
+/notes
+/local

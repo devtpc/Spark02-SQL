@@ -1,0 +1,146 @@
+Completed in 5373 ms
+Node                                                    | # Tasks | Duration total (min, med, max) | # Rows | Est # Rows | Peak Mem total (min, med, max)
+--------------------------------------------------------+---------+--------------------------------+--------+------------+-------------------------------
+(1): Scan parquet spark_catalog.datalake.hotelweather   | -       | -                              | -      | -          | -                             
+(2): Filter                                             | -       | -                              | -      | -          | -                             
+(3): Project                                            | -       | -                              | -      | -          | -                             
+(4): HashAggregate                                      | -       | -                              | -      | -          | -                             
+(5): Exchange                                           | -       | -                              | -      | -          | -                             
+(6): HashAggregate                                      | -       | -                              | -      | -          | -                             
+(7): Exchange                                           | -       | -                              | -      | -          | -                             
+(8): Scan parquet spark_catalog.datalake.expedia_silver | -       | -                              | -      | -          | -                             
+(9): Filter                                             | -       | -                              | -      | -          | -                             
+(10): BroadcastNestedLoopJoin                           | -       | -                              | -      | -          | -                             
+(11): Project                                           | -       | -                              | -      | -          | -                             
+(12): HashAggregate                                     | -       | -                              | -      | -          | -                             
+(13): Exchange                                          | -       | -                              | -      | -          | -                             
+(14): HashAggregate                                     | -       | -                              | -      | -          | -                             
+(15): Exchange                                          | -       | -                              | -      | -          | -                             
+(16): Sort                                              | -       | -                              | -      | -          | -                             
+(17): RunningWindowFunction                             | -       | -                              | -      | -          | -                             
+(18): Filter                                            | -       | -                              | -      | -          | -                             
+(19): AdaptiveSparkPlan                                 | -       | -                              | -      | -          | -                             
+(20): AtomicReplaceTableAsSelect                        | -       | -                              | -      | -          | -     
+
+== Physical Plan ==
+AtomicReplaceTableAsSelect (20)
++- AdaptiveSparkPlan (19)
+   +- Filter (18)
+      +- RunningWindowFunction (17)
+         +- Sort (16)
+            +- Exchange (15)
+               +- HashAggregate (14)
+                  +- Exchange (13)
+                     +- HashAggregate (12)
+                        +- Project (11)
+                           +- BroadcastNestedLoopJoin Cross BuildLeft (10)
+                              :- Exchange (7)
+                              :  +- HashAggregate (6)
+                              :     +- Exchange (5)
+                              :        +- HashAggregate (4)
+                              :           +- Project (3)
+                              :              +- Filter (2)
+                              :                 +- Scan parquet spark_catalog.datalake.hotelweather (1)
+                              +- Filter (9)
+                                 +- Scan parquet spark_catalog.datalake.expedia_silver (8)
+
+
+(1) Scan parquet spark_catalog.datalake.hotelweather
+Output [2]: [year#13562, month#13563]
+Batched: true
+Location: PreparedDeltaFileIndex [abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotelweather]
+PushedFilters: [IsNotNull(year), IsNotNull(month)]
+ReadSchema: struct<year:int,month:int>
+
+(2) Filter
+Input [2]: [year#13562, month#13563]
+Condition : (((isnotnull(year#13562) AND isnotnull(month#13563)) AND isnotnull(last_day(make_date(year#13562, month#13563, 1, false)))) AND isnotnull(make_date(year#13562, month#13563, 1, false)))
+
+(3) Project
+Output [4]: [year#13562, month#13563, make_date(year#13562, month#13563, 1, false) AS month_firstday#13524, last_day(make_date(year#13562, month#13563, 1, false)) AS month_lastday#13525]
+Input [2]: [year#13562, month#13563]
+
+(4) HashAggregate
+Input [4]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525]
+Keys [4]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525]
+Functions: []
+Aggregate Attributes: []
+Results [4]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525]
+
+(5) Exchange
+Input [4]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525]
+Arguments: hashpartitioning(year#13562, month#13563, month_firstday#13524, month_lastday#13525, 200), ENSURE_REQUIREMENTS, [plan_id=6131]
+
+(6) HashAggregate
+Input [4]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525]
+Keys [4]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525]
+Functions: []
+Aggregate Attributes: []
+Results [4]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525]
+
+(7) Exchange
+Input [4]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525]
+Arguments: SinglePartition, EXECUTOR_BROADCAST, [plan_id=6134]
+
+(8) Scan parquet spark_catalog.datalake.expedia_silver
+Output [3]: [hotel_id#13578L, srch_ci#13579, srch_co#13580]
+Batched: true
+Location: PreparedDeltaFileIndex [abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/expedia_silver]
+PushedFilters: [IsNotNull(srch_ci), IsNotNull(srch_co)]
+ReadSchema: struct<hotel_id:bigint,srch_ci:string,srch_co:string>
+
+(9) Filter
+Input [3]: [hotel_id#13578L, srch_ci#13579, srch_co#13580]
+Condition : (isnotnull(srch_ci#13579) AND isnotnull(srch_co#13580))
+
+(10) BroadcastNestedLoopJoin
+Join type: Cross
+Join condition: ((cast(srch_ci#13579 as date) <= month_lastday#13525) AND (cast(srch_co#13580 as date) >= month_firstday#13524))
+
+(11) Project
+Output [3]: [hotel_id#13578L, year#13562, month#13563]
+Input [7]: [year#13562, month#13563, month_firstday#13524, month_lastday#13525, hotel_id#13578L, srch_ci#13579, srch_co#13580]
+
+(12) HashAggregate
+Input [3]: [hotel_id#13578L, year#13562, month#13563]
+Keys [3]: [hotel_id#13578L, year#13562, month#13563]
+Functions [1]: [partial_count(1) AS count#13669L]
+Aggregate Attributes [1]: [count#13668L]
+Results [4]: [hotel_id#13578L, year#13562, month#13563, count#13669L]
+
+(13) Exchange
+Input [4]: [hotel_id#13578L, year#13562, month#13563, count#13669L]
+Arguments: hashpartitioning(hotel_id#13578L, year#13562, month#13563, 200), ENSURE_REQUIREMENTS, [plan_id=6139]
+
+(14) HashAggregate
+Input [4]: [hotel_id#13578L, year#13562, month#13563, count#13669L]
+Keys [3]: [hotel_id#13578L, year#13562, month#13563]
+Functions [1]: [finalmerge_count(merge count#13669L) AS count(1)#13585L]
+Aggregate Attributes [1]: [count(1)#13585L]
+Results [4]: [hotel_id#13578L, year#13562, month#13563, count(1)#13585L AS items_count#13518L]
+
+(15) Exchange
+Input [4]: [hotel_id#13578L, year#13562, month#13563, items_count#13518L]
+Arguments: hashpartitioning(year#13562, month#13563, 200), ENSURE_REQUIREMENTS, [plan_id=6142]
+
+(16) Sort
+Input [4]: [hotel_id#13578L, year#13562, month#13563, items_count#13518L]
+Arguments: [year#13562 ASC NULLS FIRST, month#13563 ASC NULLS FIRST, items_count#13518L DESC NULLS LAST], false, 0
+
+(17) RunningWindowFunction
+Input [4]: [hotel_id#13578L, year#13562, month#13563, items_count#13518L]
+Arguments: [hotel_id#13578L, year#13562, month#13563, items_count#13518L, row_number() windowspecdefinition(year#13562, month#13563, items_count#13518L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank#13519], [year#13562, month#13563], [items_count#13518L DESC NULLS LAST], false
+
+(18) Filter
+Input [5]: [hotel_id#13578L, year#13562, month#13563, items_count#13518L, rank#13519]
+Condition : (rank#13519 <= 10)
+
+(19) AdaptiveSparkPlan
+Output [5]: [hotel_id#13578L, year#13562, month#13563, items_count#13518L, rank#13519]
+Arguments: isFinalPlan=false
+
+(20) AtomicReplaceTableAsSelect
+Input [5]: [hotel_id#13578L, year#13562, month#13563, items_count#13518L, rank#13519]
+Arguments: [num_affected_rows#13714L, num_inserted_rows#13715L], com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@581a49c1, datalake.expedia_hotels_monthly, Filter (rank#13519 <= 10), TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/expedia_hotels_monthly),None,None,false,Set()), [], true, org.apache.spark.sql.execution.datasources.v2.DataSourceV2Strategy$$Lambda$8612/1685805851@7e270edb
+
+

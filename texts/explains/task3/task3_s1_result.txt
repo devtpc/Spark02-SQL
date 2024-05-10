@@ -1,0 +1,80 @@
+Completed in 5834 ms
+Node                                                    | # Tasks | Duration total (min, med, max) | # Rows | Est # Rows | Peak Mem total (min, med, max)
+--------------------------------------------------------+---------+--------------------------------+--------+------------+-------------------------------
+(1): Scan parquet spark_catalog.datalake.hotelweather   | -       | -                              | -      | -          | -                             
+(2): Filter                                             | -       | -                              | -      | -          | -                             
+(3): Exchange                                           | -       | -                              | -      | -          | -                             
+(4): Scan parquet spark_catalog.datalake.expedia_silver | -       | -                              | -      | -          | -                             
+(5): Filter                                             | -       | -                              | -      | -          | -                             
+(6): BroadcastHashJoin                                  | -       | -                              | -      | -          | -                             
+(7): Project                                            | -       | -                              | -      | -          | -                             
+(8): Exchange                                           | -       | -                              | -      | -          | -                             
+(9): Sort                                               | -       | -                              | -      | -          | -                             
+(10): AdaptiveSparkPlan                                 | -       | -                              | -      | -          | -                             
+(11): AtomicReplaceTableAsSelect                        | -       | -                              | -      | -          | -                     
+
+== Physical Plan ==
+AtomicReplaceTableAsSelect (11)
++- AdaptiveSparkPlan (10)
+   +- Sort (9)
+      +- Exchange (8)
+         +- Project (7)
+            +- BroadcastHashJoin Inner BuildLeft (6)
+               :- Exchange (3)
+               :  +- Filter (2)
+               :     +- Scan parquet spark_catalog.datalake.hotelweather (1)
+               +- Filter (5)
+                  +- Scan parquet spark_catalog.datalake.expedia_silver (4)
+
+
+(1) Scan parquet spark_catalog.datalake.hotelweather
+Output [7]: [avg_tmpr_c#15110, avg_tmpr_f#15111, id#15115, wthr_date#15119, year#15120, month#15121, day#15122]
+Batched: true
+Location: PreparedDeltaFileIndex [abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotelweather]
+PushedFilters: [IsNotNull(wthr_date), IsNotNull(id)]
+ReadSchema: struct<avg_tmpr_c:double,avg_tmpr_f:double,id:string,wthr_date:string,year:int,month:int,day:int>
+
+(2) Filter
+Input [7]: [avg_tmpr_c#15110, avg_tmpr_f#15111, id#15115, wthr_date#15119, year#15120, month#15121, day#15122]
+Condition : (isnotnull(wthr_date#15119) AND isnotnull(id#15115))
+
+(3) Exchange
+Input [7]: [avg_tmpr_c#15110, avg_tmpr_f#15111, id#15115, wthr_date#15119, year#15120, month#15121, day#15122]
+Arguments: SinglePartition, EXECUTOR_BROADCAST, [plan_id=7273]
+
+(4) Scan parquet spark_catalog.datalake.expedia_silver
+Output [4]: [expedia_id#15127L, hotel_id#15128L, srch_ci#15129, srch_co#15130]
+Batched: true
+Location: PreparedDeltaFileIndex [abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/expedia_silver]
+PushedFilters: [IsNotNull(srch_co), IsNotNull(srch_ci), IsNotNull(hotel_id)]
+ReadSchema: struct<expedia_id:bigint,hotel_id:bigint,srch_ci:string,srch_co:string>
+
+(5) Filter
+Input [4]: [expedia_id#15127L, hotel_id#15128L, srch_ci#15129, srch_co#15130]
+Condition : (((isnotnull(srch_co#15130) AND isnotnull(srch_ci#15129)) AND (datediff(cast(srch_co#15130 as date), cast(srch_ci#15129 as date)) > 7)) AND isnotnull(hotel_id#15128L))
+
+(6) BroadcastHashJoin
+Left keys [1]: [cast(id#15115 as bigint)]
+Right keys [1]: [hotel_id#15128L]
+Join type: Inner
+Join condition: ((wthr_date#15119 >= srch_ci#15129) AND (wthr_date#15119 <= srch_co#15130))
+
+(7) Project
+Output [10]: [expedia_id#15127L, hotel_id#15128L, srch_ci#15129, srch_co#15130, avg_tmpr_c#15110, avg_tmpr_f#15111, wthr_date#15119, year#15120, month#15121, day#15122]
+Input [11]: [avg_tmpr_c#15110, avg_tmpr_f#15111, id#15115, wthr_date#15119, year#15120, month#15121, day#15122, expedia_id#15127L, hotel_id#15128L, srch_ci#15129, srch_co#15130]
+
+(8) Exchange
+Input [10]: [expedia_id#15127L, hotel_id#15128L, srch_ci#15129, srch_co#15130, avg_tmpr_c#15110, avg_tmpr_f#15111, wthr_date#15119, year#15120, month#15121, day#15122]
+Arguments: rangepartitioning(hotel_id#15128L ASC NULLS FIRST, 200), ENSURE_REQUIREMENTS, [plan_id=7277]
+
+(9) Sort
+Input [10]: [expedia_id#15127L, hotel_id#15128L, srch_ci#15129, srch_co#15130, avg_tmpr_c#15110, avg_tmpr_f#15111, wthr_date#15119, year#15120, month#15121, day#15122]
+Arguments: [hotel_id#15128L ASC NULLS FIRST], true, 0
+
+(10) AdaptiveSparkPlan
+Output [10]: [expedia_id#15127L, hotel_id#15128L, srch_ci#15129, srch_co#15130, avg_tmpr_c#15110, avg_tmpr_f#15111, wthr_date#15119, year#15120, month#15121, day#15122]
+Arguments: isFinalPlan=false
+
+(11) AtomicReplaceTableAsSelect
+Input [10]: [expedia_id#15127L, hotel_id#15128L, srch_ci#15129, srch_co#15130, avg_tmpr_c#15110, avg_tmpr_f#15111, wthr_date#15119, year#15120, month#15121, day#15122]
+Arguments: [num_affected_rows#15250L, num_inserted_rows#15251L], com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@115831eb, datalake.hotels_expedia_joined, Sort [hotel_id#15128L ASC NULLS FIRST], true, TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotels_expedia_joined),None,None,false,Set()), [], true, org.apache.spark.sql.execution.datasources.v2.DataSourceV2Strategy$$Lambda$8612/1685805851@347d2d9e

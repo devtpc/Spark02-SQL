@@ -1,0 +1,45 @@
+== Parsed Logical Plan ==
+'ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotel_tempr_ranks),None,None,false,Set()), true
+:- 'UnresolvedIdentifier [hotel_tempr_ranks]
++- 'Project [*]
+   +- 'Filter ('diff_rank <= 10)
+      +- 'SubqueryAlias __auto_generated_subquery_name
+         +- 'Project [*, ('max_c - 'min_c) AS diff_c#11455, ('max_f - 'min_f) AS diff_f#11456, 'ROW_NUMBER() windowspecdefinition('year, 'month, ('max_c - 'min_c) DESC NULLS LAST, unspecifiedframe$()) AS diff_rank#11457]
+            +- 'SubqueryAlias __auto_generated_subquery_name
+               +- 'Aggregate ['id, 'name, 'country, 'city, 'address, 'year, 'month], ['id, 'name, 'country, 'city, 'address, 'year, 'month, 'min('avg_tmpr_c) AS min_c#11451, 'max('avg_tmpr_c) AS max_c#11452, 'min('avg_tmpr_f) AS min_f#11453, 'max('avg_tmpr_f) AS max_f#11454]
+                  +- 'UnresolvedRelation [hotelweather], [], false
+
+== Analyzed Logical Plan ==
+num_affected_rows: bigint, num_inserted_rows: bigint
+ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotel_tempr_ranks),None,None,false,Set()), true
+:- ResolvedIdentifier com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@5642e872, datalake.hotel_tempr_ranks
++- Project [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min_c#11451, max_c#11452, min_f#11453, max_f#11454, diff_c#11455, diff_f#11456, diff_rank#11457]
+   +- Filter (diff_rank#11457 <= 10)
+      +- SubqueryAlias __auto_generated_subquery_name
+         +- Window [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min_c#11451, max_c#11452, min_f#11453, max_f#11454, (max_c#11452 - min_c#11451) AS diff_c#11455, (max_f#11454 - min_f#11453) AS diff_f#11456, row_number() windowspecdefinition(year#11501, month#11502, (max_c#11452 - min_c#11451) DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS diff_rank#11457], [year#11501, month#11502], [(max_c#11452 - min_c#11451) DESC NULLS LAST]
+            +- Project [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min_c#11451, max_c#11452, min_f#11453, max_f#11454]
+               +- SubqueryAlias __auto_generated_subquery_name
+                  +- Aggregate [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502], [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min(avg_tmpr_c#11491) AS min_c#11451, max(avg_tmpr_c#11491) AS max_c#11452, min(avg_tmpr_f#11492) AS min_f#11453, max(avg_tmpr_f#11492) AS max_f#11454]
+                     +- SubqueryAlias spark_catalog.datalake.hotelweather
+                        +- Relation spark_catalog.datalake.hotelweather[address#11490,avg_tmpr_c#11491,avg_tmpr_f#11492,city#11493,country#11494,geoHash#11495,id#11496,latitude#11497,longitude#11498,name#11499,wthr_date#11500,year#11501,month#11502,day#11503] parquet
+
+== Optimized Logical Plan ==
+ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotel_tempr_ranks),None,None,false,Set()), true
+:- ResolvedIdentifier com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@5642e872, datalake.hotel_tempr_ranks
++- Filter (diff_rank#11457 <= 10)
+   +- Window [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min_c#11451, max_c#11452, min_f#11453, max_f#11454, _w0#11550 AS diff_c#11455, (max_f#11454 - min_f#11453) AS diff_f#11456, row_number() windowspecdefinition(year#11501, month#11502, _w0#11550 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS diff_rank#11457], [year#11501, month#11502], [_w0#11550 DESC NULLS LAST]
+      +- Aggregate [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502], [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min(avg_tmpr_c#11491) AS min_c#11451, max(avg_tmpr_c#11491) AS max_c#11452, min(avg_tmpr_f#11492) AS min_f#11453, max(avg_tmpr_f#11492) AS max_f#11454, (max(avg_tmpr_c#11491) - min(avg_tmpr_c#11491)) AS _w0#11550]
+         +- Project [address#11490, avg_tmpr_c#11491, avg_tmpr_f#11492, city#11493, country#11494, id#11496, name#11499, year#11501, month#11502]
+            +- Relation spark_catalog.datalake.hotelweather[address#11490,avg_tmpr_c#11491,avg_tmpr_f#11492,city#11493,country#11494,geoHash#11495,id#11496,latitude#11497,longitude#11498,name#11499,wthr_date#11500,year#11501,month#11502,day#11503] parquet
+
+== Physical Plan ==
+AtomicReplaceTableAsSelect [num_affected_rows#11581L, num_inserted_rows#11582L], com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@5642e872, datalake.hotel_tempr_ranks, Filter (diff_rank#11457 <= 10), TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotel_tempr_ranks),None,None,false,Set()), [], true, org.apache.spark.sql.execution.datasources.v2.DataSourceV2Strategy$$Lambda$8612/1685805851@1ccd760f
++- AdaptiveSparkPlan isFinalPlan=false
+   +- Filter (diff_rank#11457 <= 10)
+      +- RunningWindowFunction [id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min_c#11451, max_c#11452, min_f#11453, max_f#11454, _w0#11550 AS diff_c#11455, (max_f#11454 - min_f#11453) AS diff_f#11456, row_number() windowspecdefinition(year#11501, month#11502, _w0#11550 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS diff_rank#11457], [year#11501, month#11502], [_w0#11550 DESC NULLS LAST], false
+         +- Sort [year#11501 ASC NULLS FIRST, month#11502 ASC NULLS FIRST, _w0#11550 DESC NULLS LAST], false, 0
+            +- Exchange hashpartitioning(year#11501, month#11502, 200), ENSURE_REQUIREMENTS, [plan_id=5038]
+               +- HashAggregate(keys=[id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502], functions=[finalmerge_min(merge min#11556) AS min(avg_tmpr_c#11491)#11508, finalmerge_max(merge max#11558) AS max(avg_tmpr_c#11491)#11509, finalmerge_min(merge min#11560) AS min(avg_tmpr_f#11492)#11510, finalmerge_max(merge max#11562) AS max(avg_tmpr_f#11492)#11511], output=[id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min_c#11451, max_c#11452, min_f#11453, max_f#11454, _w0#11550])
+                  +- Exchange hashpartitioning(id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, 200), ENSURE_REQUIREMENTS, [plan_id=5035]
+                     +- HashAggregate(keys=[id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502], functions=[partial_min(avg_tmpr_c#11491) AS min#11556, partial_max(avg_tmpr_c#11491) AS max#11558, partial_min(avg_tmpr_f#11492) AS min#11560, partial_max(avg_tmpr_f#11492) AS max#11562], output=[id#11496, name#11499, country#11494, city#11493, address#11490, year#11501, month#11502, min#11556, max#11558, min#11560, max#11562])
+                        +- FileScan parquet spark_catalog.datalake.hotelweather[address#11490,avg_tmpr_c#11491,avg_tmpr_f#11492,city#11493,country#11494,id#11496,name#11499,year#11501,month#11502] Batched: true, DataFilters: [], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/h..., PartitionFilters: [], PushedFilters: [], ReadSchema: struct<address:string,avg_tmpr_c:double,avg_tmpr_f:double,city:string,country:string,id:string,na...

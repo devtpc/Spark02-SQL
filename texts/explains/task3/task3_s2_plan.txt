@@ -1,0 +1,72 @@
+== Parsed Logical Plan ==
+'ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/extended_stay_weather),None,None,false,Set()), true
+:- 'UnresolvedIdentifier [extended_stay_weather]
++- 'Project [ArrayBuffer(h).*, 'h2.avg_tmpr_c AS tmpr_c_first#16152, 'h3.avg_tmpr_c AS tmpr_c_last#16153, ('h3.avg_tmpr_c - 'h2.avg_tmpr_c) AS tmpr_c_diff#16154, 'h2.avg_tmpr_f AS tmpr_f_first#16155, 'h3.avg_tmpr_f AS tmpr_f_last#16156, ('h3.avg_tmpr_f - 'h2.avg_tmpr_f) AS tmpr_f_diff#16157]
+   +- 'Join Inner, (('h.expedia_id = 'h3.expedia_id) AND ('h.last_date = 'h3.wthr_date))
+      :- 'Join Inner, (('h.expedia_id = 'h2.expedia_id) AND ('h.first_date = 'h2.wthr_date))
+      :  :- 'SubqueryAlias h
+      :  :  +- 'Aggregate ['expedia_id, 'hotel_id, 'srch_ci, 'srch_co], ['expedia_id, 'hotel_id, 'srch_ci, 'srch_co, 'MIN('wthr_date) AS first_date#16148, 'MAX('wthr_date) AS last_date#16149, 'AVG('avg_tmpr_c) AS full_avg_c#16150, 'AVG('avg_tmpr_f) AS full_avg_f#16151]
+      :  :     +- 'UnresolvedRelation [hotels_expedia_joined], [], false
+      :  +- 'SubqueryAlias h2
+      :     +- 'UnresolvedRelation [hotels_expedia_joined], [], false
+      +- 'SubqueryAlias h3
+         +- 'UnresolvedRelation [hotels_expedia_joined], [], false
+
+== Analyzed Logical Plan ==
+num_affected_rows: bigint, num_inserted_rows: bigint
+ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/extended_stay_weather),None,None,false,Set()), true
+:- ResolvedIdentifier com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@6b5acee9, datalake.extended_stay_weather
++- Project [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, first_date#16148, last_date#16149, full_avg_c#16150, full_avg_f#16151, avg_tmpr_c#16193 AS tmpr_c_first#16152, avg_tmpr_c#16203 AS tmpr_c_last#16153, (avg_tmpr_c#16203 - avg_tmpr_c#16193) AS tmpr_c_diff#16154, avg_tmpr_f#16194 AS tmpr_f_first#16155, avg_tmpr_f#16204 AS tmpr_f_last#16156, (avg_tmpr_f#16204 - avg_tmpr_f#16194) AS tmpr_f_diff#16157]
+   +- Join Inner, ((expedia_id#16179L = expedia_id#16199L) AND (last_date#16149 = wthr_date#16205))
+      :- Join Inner, ((expedia_id#16179L = expedia_id#16189L) AND (first_date#16148 = wthr_date#16195))
+      :  :- SubqueryAlias h
+      :  :  +- Aggregate [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182], [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, min(wthr_date#16185) AS first_date#16148, max(wthr_date#16185) AS last_date#16149, avg(avg_tmpr_c#16183) AS full_avg_c#16150, avg(avg_tmpr_f#16184) AS full_avg_f#16151]
+      :  :     +- SubqueryAlias spark_catalog.datalake.hotels_expedia_joined
+      :  :        +- Relation spark_catalog.datalake.hotels_expedia_joined[expedia_id#16179L,hotel_id#16180L,srch_ci#16181,srch_co#16182,avg_tmpr_c#16183,avg_tmpr_f#16184,wthr_date#16185,year#16186,month#16187,day#16188] parquet
+      :  +- SubqueryAlias h2
+      :     +- SubqueryAlias spark_catalog.datalake.hotels_expedia_joined
+      :        +- Relation spark_catalog.datalake.hotels_expedia_joined[expedia_id#16189L,hotel_id#16190L,srch_ci#16191,srch_co#16192,avg_tmpr_c#16193,avg_tmpr_f#16194,wthr_date#16195,year#16196,month#16197,day#16198] parquet
+      +- SubqueryAlias h3
+         +- SubqueryAlias spark_catalog.datalake.hotels_expedia_joined
+            +- Relation spark_catalog.datalake.hotels_expedia_joined[expedia_id#16199L,hotel_id#16200L,srch_ci#16201,srch_co#16202,avg_tmpr_c#16203,avg_tmpr_f#16204,wthr_date#16205,year#16206,month#16207,day#16208] parquet
+
+== Optimized Logical Plan ==
+ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/extended_stay_weather),None,None,false,Set()), true
+:- ResolvedIdentifier com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@6b5acee9, datalake.extended_stay_weather
++- Project [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, first_date#16148, last_date#16149, full_avg_c#16150, full_avg_f#16151, avg_tmpr_c#16193 AS tmpr_c_first#16152, avg_tmpr_c#16203 AS tmpr_c_last#16153, (avg_tmpr_c#16203 - avg_tmpr_c#16193) AS tmpr_c_diff#16154, avg_tmpr_f#16194 AS tmpr_f_first#16155, avg_tmpr_f#16204 AS tmpr_f_last#16156, (avg_tmpr_f#16204 - avg_tmpr_f#16194) AS tmpr_f_diff#16157]
+   +- Join Inner, ((expedia_id#16179L = expedia_id#16199L) AND (last_date#16149 = wthr_date#16205))
+      :- Project [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, first_date#16148, last_date#16149, full_avg_c#16150, full_avg_f#16151, avg_tmpr_c#16193, avg_tmpr_f#16194]
+      :  +- Join Inner, ((expedia_id#16179L = expedia_id#16189L) AND (first_date#16148 = wthr_date#16195))
+      :     :- Filter (isnotnull(first_date#16148) AND isnotnull(last_date#16149))
+      :     :  +- Aggregate [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182], [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, min(wthr_date#16185) AS first_date#16148, max(wthr_date#16185) AS last_date#16149, avg(avg_tmpr_c#16183) AS full_avg_c#16150, avg(avg_tmpr_f#16184) AS full_avg_f#16151]
+      :     :     +- Project [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, avg_tmpr_c#16183, avg_tmpr_f#16184, wthr_date#16185]
+      :     :        +- Filter isnotnull(expedia_id#16179L)
+      :     :           +- Relation spark_catalog.datalake.hotels_expedia_joined[expedia_id#16179L,hotel_id#16180L,srch_ci#16181,srch_co#16182,avg_tmpr_c#16183,avg_tmpr_f#16184,wthr_date#16185,year#16186,month#16187,day#16188] parquet
+      :     +- Project [expedia_id#16189L, avg_tmpr_c#16193, avg_tmpr_f#16194, wthr_date#16195]
+      :        +- Filter (isnotnull(expedia_id#16189L) AND isnotnull(wthr_date#16195))
+      :           +- Relation spark_catalog.datalake.hotels_expedia_joined[expedia_id#16189L,hotel_id#16190L,srch_ci#16191,srch_co#16192,avg_tmpr_c#16193,avg_tmpr_f#16194,wthr_date#16195,year#16196,month#16197,day#16198] parquet
+      +- Project [expedia_id#16199L, avg_tmpr_c#16203, avg_tmpr_f#16204, wthr_date#16205]
+         +- Filter (isnotnull(expedia_id#16199L) AND isnotnull(wthr_date#16205))
+            +- Relation spark_catalog.datalake.hotels_expedia_joined[expedia_id#16199L,hotel_id#16200L,srch_ci#16201,srch_co#16202,avg_tmpr_c#16203,avg_tmpr_f#16204,wthr_date#16205,year#16206,month#16207,day#16208] parquet
+
+== Physical Plan ==
+AtomicReplaceTableAsSelect [num_affected_rows#16411L, num_inserted_rows#16412L], com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@6b5acee9, datalake.extended_stay_weather, Project [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, first_date#16148, last_date#16149, full_avg_c#16150, full_avg_f#16151, avg_tmpr_c#16193 AS tmpr_c_first#16152, avg_tmpr_c#16203 AS tmpr_c_last#16153, (avg_tmpr_c#16203 - avg_tmpr_c#16193) AS tmpr_c_diff#16154, avg_tmpr_f#16194 AS tmpr_f_first#16155, avg_tmpr_f#16204 AS tmpr_f_last#16156, (avg_tmpr_f#16204 - avg_tmpr_f#16194) AS tmpr_f_diff#16157], TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/extended_stay_weather),None,None,false,Set()), [], true, org.apache.spark.sql.execution.datasources.v2.DataSourceV2Strategy$$Lambda$8612/1685805851@9c4a1bd
++- AdaptiveSparkPlan isFinalPlan=false
+   +- Project [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, first_date#16148, last_date#16149, full_avg_c#16150, full_avg_f#16151, avg_tmpr_c#16193 AS tmpr_c_first#16152, avg_tmpr_c#16203 AS tmpr_c_last#16153, (avg_tmpr_c#16203 - avg_tmpr_c#16193) AS tmpr_c_diff#16154, avg_tmpr_f#16194 AS tmpr_f_first#16155, avg_tmpr_f#16204 AS tmpr_f_last#16156, (avg_tmpr_f#16204 - avg_tmpr_f#16194) AS tmpr_f_diff#16157]
+      +- BroadcastHashJoin [expedia_id#16179L, last_date#16149], [expedia_id#16199L, wthr_date#16205], Inner, BuildRight, false
+         :- Project [expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, first_date#16148, last_date#16149, full_avg_c#16150, full_avg_f#16151, avg_tmpr_c#16193, avg_tmpr_f#16194]
+         :  +- BroadcastHashJoin [expedia_id#16179L, first_date#16148], [expedia_id#16189L, wthr_date#16195], Inner, BuildRight, false
+         :     :- Filter (isnotnull(first_date#16148) AND isnotnull(last_date#16149))
+         :     :  +- SortAggregate(key=[expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182], functions=[finalmerge_min(merge min#16280) AS min(wthr_date#16185)#16213, finalmerge_max(merge max#16282) AS max(wthr_date#16185)#16214, finalmerge_avg(merge sum#16285, count#16286L) AS avg(avg_tmpr_c#16183)#16215, finalmerge_avg(merge sum#16289, count#16290L) AS avg(avg_tmpr_f#16184)#16216], output=[expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, first_date#16148, last_date#16149, full_avg_c#16150, full_avg_f#16151])
+         :     :     +- Sort [expedia_id#16179L ASC NULLS FIRST, hotel_id#16180L ASC NULLS FIRST, srch_ci#16181 ASC NULLS FIRST, srch_co#16182 ASC NULLS FIRST], false, 0
+         :     :        +- Exchange hashpartitioning(expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, 200), ENSURE_REQUIREMENTS, [plan_id=7946]
+         :     :           +- SortAggregate(key=[expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182], functions=[partial_min(wthr_date#16185) AS min#16280, partial_max(wthr_date#16185) AS max#16282, partial_avg(avg_tmpr_c#16183) AS (sum#16285, count#16286L), partial_avg(avg_tmpr_f#16184) AS (sum#16289, count#16290L)], output=[expedia_id#16179L, hotel_id#16180L, srch_ci#16181, srch_co#16182, min#16280, max#16282, sum#16285, count#16286L, sum#16289, count#16290L])
+         :     :              +- Sort [expedia_id#16179L ASC NULLS FIRST, hotel_id#16180L ASC NULLS FIRST, srch_ci#16181 ASC NULLS FIRST, srch_co#16182 ASC NULLS FIRST], false, 0
+         :     :                 +- Filter isnotnull(expedia_id#16179L)
+         :     :                    +- FileScan parquet spark_catalog.datalake.hotels_expedia_joined[expedia_id#16179L,hotel_id#16180L,srch_ci#16181,srch_co#16182,avg_tmpr_c#16183,avg_tmpr_f#16184,wthr_date#16185] Batched: true, DataFilters: [isnotnull(expedia_id#16179L)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/h..., PartitionFilters: [], PushedFilters: [IsNotNull(expedia_id)], ReadSchema: struct<expedia_id:bigint,hotel_id:bigint,srch_ci:string,srch_co:string,avg_tmpr_c:double,avg_tmpr...
+         :     +- Exchange SinglePartition, EXECUTOR_BROADCAST, [plan_id=7951]
+         :        +- Filter (isnotnull(expedia_id#16189L) AND isnotnull(wthr_date#16195))
+         :           +- FileScan parquet spark_catalog.datalake.hotels_expedia_joined[expedia_id#16189L,avg_tmpr_c#16193,avg_tmpr_f#16194,wthr_date#16195] Batched: true, DataFilters: [isnotnull(expedia_id#16189L), isnotnull(wthr_date#16195)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/h..., PartitionFilters: [], PushedFilters: [IsNotNull(expedia_id), IsNotNull(wthr_date)], ReadSchema: struct<expedia_id:bigint,avg_tmpr_c:double,avg_tmpr_f:double,wthr_date:string>
+         +- Exchange SinglePartition, EXECUTOR_BROADCAST, [plan_id=7955]
+            +- Filter (isnotnull(expedia_id#16199L) AND isnotnull(wthr_date#16205))
+               +- FileScan parquet spark_catalog.datalake.hotels_expedia_joined[expedia_id#16199L,avg_tmpr_c#16203,avg_tmpr_f#16204,wthr_date#16205] Batched: true, DataFilters: [isnotnull(expedia_id#16199L), isnotnull(wthr_date#16205)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/h..., PartitionFilters: [], PushedFilters: [IsNotNull(expedia_id), IsNotNull(wthr_date)], ReadSchema: struct<expedia_id:bigint,avg_tmpr_c:double,avg_tmpr_f:double,wthr_date:string>

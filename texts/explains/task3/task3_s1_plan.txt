@@ -1,0 +1,51 @@
+== Parsed Logical Plan ==
+'ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotels_expedia_joined),None,None,false,Set()), true
+:- 'UnresolvedIdentifier [hotels_expedia_joined]
++- 'Sort ['e.hotel_id ASC NULLS FIRST], true
+   +- 'Project ['e.expedia_id, 'e.hotel_id, 'e.srch_ci, 'e.srch_co, 'hw.avg_tmpr_c, 'hw.avg_tmpr_f, 'hw.wthr_date, 'hw.year, 'hw.month, 'hw.day]
+      +- 'Filter ((('DATEDIFF('e.srch_co, 'e.srch_ci) > 7) AND ('hw.wthr_date >= 'e.srch_ci)) AND ('hw.wthr_date <= 'e.srch_co))
+         +- 'Join Inner, ('hw.id = 'e.hotel_id)
+            :- 'SubqueryAlias hw
+            :  +- 'UnresolvedRelation [hotelweather], [], false
+            +- 'SubqueryAlias e
+               +- 'UnresolvedRelation [expedia_silver], [], false
+
+== Analyzed Logical Plan ==
+num_affected_rows: bigint, num_inserted_rows: bigint
+ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotels_expedia_joined),None,None,false,Set()), true
+:- ResolvedIdentifier com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@1c1f70e, datalake.hotels_expedia_joined
++- Sort [hotel_id#14805L ASC NULLS FIRST], true
+   +- Project [expedia_id#14804L, hotel_id#14805L, srch_ci#14806, srch_co#14807, avg_tmpr_c#14787, avg_tmpr_f#14788, wthr_date#14796, year#14797, month#14798, day#14799]
+      +- Filter (((datediff(cast(srch_co#14807 as date), cast(srch_ci#14806 as date)) > 7) AND (wthr_date#14796 >= srch_ci#14806)) AND (wthr_date#14796 <= srch_co#14807))
+         +- Join Inner, (cast(id#14792 as bigint) = hotel_id#14805L)
+            :- SubqueryAlias hw
+            :  +- SubqueryAlias spark_catalog.datalake.hotelweather
+            :     +- Relation spark_catalog.datalake.hotelweather[address#14786,avg_tmpr_c#14787,avg_tmpr_f#14788,city#14789,country#14790,geoHash#14791,id#14792,latitude#14793,longitude#14794,name#14795,wthr_date#14796,year#14797,month#14798,day#14799] parquet
+            +- SubqueryAlias e
+               +- SubqueryAlias spark_catalog.datalake.expedia_silver
+                  +- Relation spark_catalog.datalake.expedia_silver[expedia_id#14804L,hotel_id#14805L,srch_ci#14806,srch_co#14807] parquet
+
+== Optimized Logical Plan ==
+ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotels_expedia_joined),None,None,false,Set()), true
+:- ResolvedIdentifier com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@1c1f70e, datalake.hotels_expedia_joined
++- Sort [hotel_id#14805L ASC NULLS FIRST], true
+   +- Project [expedia_id#14804L, hotel_id#14805L, srch_ci#14806, srch_co#14807, avg_tmpr_c#14787, avg_tmpr_f#14788, wthr_date#14796, year#14797, month#14798, day#14799]
+      +- Join Inner, (((wthr_date#14796 >= srch_ci#14806) AND (wthr_date#14796 <= srch_co#14807)) AND (cast(id#14792 as bigint) = hotel_id#14805L))
+         :- Project [avg_tmpr_c#14787, avg_tmpr_f#14788, id#14792, wthr_date#14796, year#14797, month#14798, day#14799]
+         :  +- Filter (isnotnull(wthr_date#14796) AND isnotnull(id#14792))
+         :     +- Relation spark_catalog.datalake.hotelweather[address#14786,avg_tmpr_c#14787,avg_tmpr_f#14788,city#14789,country#14790,geoHash#14791,id#14792,latitude#14793,longitude#14794,name#14795,wthr_date#14796,year#14797,month#14798,day#14799] parquet
+         +- Filter (((isnotnull(srch_co#14807) AND isnotnull(srch_ci#14806)) AND (datediff(cast(srch_co#14807 as date), cast(srch_ci#14806 as date)) > 7)) AND isnotnull(hotel_id#14805L))
+            +- Relation spark_catalog.datalake.expedia_silver[expedia_id#14804L,hotel_id#14805L,srch_ci#14806,srch_co#14807] parquet
+
+== Physical Plan ==
+AtomicReplaceTableAsSelect [num_affected_rows#14918L, num_inserted_rows#14919L], com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@1c1f70e, datalake.hotels_expedia_joined, Sort [hotel_id#14805L ASC NULLS FIRST], true, TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/hotels_expedia_joined),None,None,false,Set()), [], true, org.apache.spark.sql.execution.datasources.v2.DataSourceV2Strategy$$Lambda$8612/1685805851@4cdcdc2c
++- AdaptiveSparkPlan isFinalPlan=false
+   +- Sort [hotel_id#14805L ASC NULLS FIRST], true, 0
+      +- Exchange rangepartitioning(hotel_id#14805L ASC NULLS FIRST, 200), ENSURE_REQUIREMENTS, [plan_id=7104]
+         +- Project [expedia_id#14804L, hotel_id#14805L, srch_ci#14806, srch_co#14807, avg_tmpr_c#14787, avg_tmpr_f#14788, wthr_date#14796, year#14797, month#14798, day#14799]
+            +- BroadcastHashJoin [cast(id#14792 as bigint)], [hotel_id#14805L], Inner, BuildLeft, ((wthr_date#14796 >= srch_ci#14806) AND (wthr_date#14796 <= srch_co#14807)), false
+               :- Exchange SinglePartition, EXECUTOR_BROADCAST, [plan_id=7100]
+               :  +- Filter (isnotnull(wthr_date#14796) AND isnotnull(id#14792))
+               :     +- FileScan parquet spark_catalog.datalake.hotelweather[avg_tmpr_c#14787,avg_tmpr_f#14788,id#14792,wthr_date#14796,year#14797,month#14798,day#14799] Batched: true, DataFilters: [isnotnull(wthr_date#14796), isnotnull(id#14792)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/h..., PartitionFilters: [], PushedFilters: [IsNotNull(wthr_date), IsNotNull(id)], ReadSchema: struct<avg_tmpr_c:double,avg_tmpr_f:double,id:string,wthr_date:string,year:int,month:int,day:int>
+               +- Filter (((isnotnull(srch_co#14807) AND isnotnull(srch_ci#14806)) AND (datediff(cast(srch_co#14807 as date), cast(srch_ci#14806 as date)) > 7)) AND isnotnull(hotel_id#14805L))
+                  +- FileScan parquet spark_catalog.datalake.expedia_silver[expedia_id#14804L,hotel_id#14805L,srch_ci#14806,srch_co#14807] Batched: true, DataFilters: [isnotnull(srch_co#14807), isnotnull(srch_ci#14806), (datediff(cast(srch_co#14807 as date), cast(..., Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/e..., PartitionFilters: [], PushedFilters: [IsNotNull(srch_co), IsNotNull(srch_ci), IsNotNull(hotel_id)], ReadSchema: struct<expedia_id:bigint,hotel_id:bigint,srch_ci:string,srch_co:string>

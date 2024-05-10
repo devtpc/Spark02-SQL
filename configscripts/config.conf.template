@@ -1,0 +1,11 @@
+# Rename this file to config.conf, and fill AZURE_BASE WITH YOUR DATA
+
+# Azure keys
+AZURE_BASE="YOUR_BASE_NAME"  #USE YOUR OWN STRING - It doesn't need to be secret, mut make sure it's unique
+AZURE_LOCATION="westeurope" #LEAVE IT AS IT IS, OR USE YOUR OWN AZURE REGION
+
+
+AZURE_RESOURCE_GROUP=rg-"$AZURE_BASE"-"$AZURE_LOCATION"
+AZURE_DATABRICS_WS=dbw-"$AZURE_BASE"-"$AZURE_LOCATION"
+STORAGE_ACCOUNT=st"$AZURE_BASE""$AZURE_LOCATION"
+

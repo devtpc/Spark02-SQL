@@ -1,0 +1,83 @@
+== Parsed Logical Plan ==
+'ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/expedia_hotels_monthly),None,None,false,Set()), true
+:- 'UnresolvedIdentifier [expedia_hotels_monthly]
++- 'Project [*]
+   +- 'Filter ('rank <= 10)
+      +- 'SubqueryAlias __auto_generated_subquery_name
+         +- 'Project [*, 'ROW_NUMBER() windowspecdefinition('year, 'month, 'items_count DESC NULLS LAST, unspecifiedframe$()) AS rank#13025]
+            +- 'SubqueryAlias __auto_generated_subquery_name
+               +- 'Aggregate ['hotel_id, 'year, 'month], ['hotel_id, 'year, 'month, 'COUNT(1) AS items_count#13024]
+                  +- 'SubqueryAlias __auto_generated_subquery_name
+                     +- 'Project [ArrayBuffer(e).*, ArrayBuffer(md).*]
+                        +- 'Filter (('e.srch_ci <= 'md.month_lastday) AND ('e.srch_co >= 'md.month_firstday))
+                           +- 'Join Cross
+                              :- 'SubqueryAlias md
+                              :  +- 'UnresolvedRelation [monthdates], [], false
+                              +- 'SubqueryAlias e
+                                 +- 'UnresolvedRelation [expedia_silver], [], false
+
+== Analyzed Logical Plan ==
+num_affected_rows: bigint, num_inserted_rows: bigint
+ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/expedia_hotels_monthly),None,None,false,Set()), true
+:- ResolvedIdentifier com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@4437b2a7, datalake.expedia_hotels_monthly
++- Project [hotel_id#13080L, year#13037, month#13038, items_count#13024L, rank#13025]
+   +- Filter (rank#13025 <= 10)
+      +- SubqueryAlias __auto_generated_subquery_name
+         +- Window [hotel_id#13080L, year#13037, month#13038, items_count#13024L, row_number() windowspecdefinition(year#13037, month#13038, items_count#13024L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank#13025], [year#13037, month#13038], [items_count#13024L DESC NULLS LAST]
+            +- Project [hotel_id#13080L, year#13037, month#13038, items_count#13024L]
+               +- SubqueryAlias __auto_generated_subquery_name
+                  +- Aggregate [hotel_id#13080L, year#13037, month#13038], [hotel_id#13080L, year#13037, month#13038, count(1) AS items_count#13024L]
+                     +- SubqueryAlias __auto_generated_subquery_name
+                        +- Project [expedia_id#13079L, hotel_id#13080L, srch_ci#13081, srch_co#13082, year#13037, month#13038, month_firstday#13039, month_lastday#13040]
+                           +- Filter ((cast(srch_ci#13081 as date) <= month_lastday#13040) AND (cast(srch_co#13082 as date) >= month_firstday#13039))
+                              +- Join Cross
+                                 :- SubqueryAlias md
+                                 :  +- SubqueryAlias monthdates
+                                 :     +- View (`monthdates`, [year#13037,month#13038,month_firstday#13039,month_lastday#13040])
+                                 :        +- Project [cast(year#13066 as int) AS year#13037, cast(month#13067 as int) AS month#13038, cast(month_firstday#13035 as date) AS month_firstday#13039, cast(month_lastday#13036 as date) AS month_lastday#13040]
+                                 :           +- Sort [year#13066 ASC NULLS FIRST, month#13067 ASC NULLS FIRST], true
+                                 :              +- Distinct
+                                 :                 +- Project [year#13066, month#13067, make_date(year#13066, month#13067, 1, false) AS month_firstday#13035, last_day(make_date(year#13066, month#13067, 1, false)) AS month_lastday#13036]
+                                 :                    +- SubqueryAlias spark_catalog.datalake.hotelweather
+                                 :                       +- Relation spark_catalog.datalake.hotelweather[address#13055,avg_tmpr_c#13056,avg_tmpr_f#13057,city#13058,country#13059,geoHash#13060,id#13061,latitude#13062,longitude#13063,name#13064,wthr_date#13065,year#13066,month#13067,day#13068] parquet
+                                 +- SubqueryAlias e
+                                    +- SubqueryAlias spark_catalog.datalake.expedia_silver
+                                       +- Relation spark_catalog.datalake.expedia_silver[expedia_id#13079L,hotel_id#13080L,srch_ci#13081,srch_co#13082] parquet
+
+== Optimized Logical Plan ==
+ReplaceTableAsSelect TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/expedia_hotels_monthly),None,None,false,Set()), true
+:- ResolvedIdentifier com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@4437b2a7, datalake.expedia_hotels_monthly
++- Filter (rank#13025 <= 10)
+   +- Window [hotel_id#13080L, year#13066, month#13067, items_count#13024L, row_number() windowspecdefinition(year#13066, month#13067, items_count#13024L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank#13025], [year#13066, month#13067], [items_count#13024L DESC NULLS LAST]
+      +- Aggregate [hotel_id#13080L, year#13066, month#13067], [hotel_id#13080L, year#13066, month#13067, count(1) AS items_count#13024L]
+         +- Project [hotel_id#13080L, year#13066, month#13067]
+            +- Join Cross, ((cast(srch_ci#13081 as date) <= month_lastday#13036) AND (cast(srch_co#13082 as date) >= month_firstday#13035))
+               :- Aggregate [year#13066, month#13067, month_firstday#13035, month_lastday#13036], [year#13066, month#13067, month_firstday#13035, month_lastday#13036]
+               :  +- Project [year#13066, month#13067, make_date(year#13066, month#13067, 1, false) AS month_firstday#13035, last_day(make_date(year#13066, month#13067, 1, false)) AS month_lastday#13036]
+               :     +- Filter ((isnotnull(year#13066) AND isnotnull(month#13067)) AND (isnotnull(last_day(make_date(year#13066, month#13067, 1, false))) AND isnotnull(make_date(year#13066, month#13067, 1, false))))
+               :        +- Relation spark_catalog.datalake.hotelweather[address#13055,avg_tmpr_c#13056,avg_tmpr_f#13057,city#13058,country#13059,geoHash#13060,id#13061,latitude#13062,longitude#13063,name#13064,wthr_date#13065,year#13066,month#13067,day#13068] parquet
+               +- Project [hotel_id#13080L, srch_ci#13081, srch_co#13082]
+                  +- Filter (isnotnull(srch_ci#13081) AND isnotnull(srch_co#13082))
+                     +- Relation spark_catalog.datalake.expedia_silver[expedia_id#13079L,hotel_id#13080L,srch_ci#13081,srch_co#13082] parquet
+
+== Physical Plan ==
+AtomicReplaceTableAsSelect [num_affected_rows#13317L, num_inserted_rows#13318L], com.databricks.sql.managedcatalog.UnityCatalogV2Proxy@4437b2a7, datalake.expedia_hotels_monthly, Filter (rank#13025 <= 10), TableSpec(Map(),None,Map(),Some(abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/expedia_hotels_monthly),None,None,false,Set()), [], true, org.apache.spark.sql.execution.datasources.v2.DataSourceV2Strategy$$Lambda$8612/1685805851@374ef50b
++- AdaptiveSparkPlan isFinalPlan=false
+   +- Filter (rank#13025 <= 10)
+      +- RunningWindowFunction [hotel_id#13080L, year#13066, month#13067, items_count#13024L, row_number() windowspecdefinition(year#13066, month#13067, items_count#13024L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank#13025], [year#13066, month#13067], [items_count#13024L DESC NULLS LAST], false
+         +- Sort [year#13066 ASC NULLS FIRST, month#13067 ASC NULLS FIRST, items_count#13024L DESC NULLS LAST], false, 0
+            +- Exchange hashpartitioning(year#13066, month#13067, 200), ENSURE_REQUIREMENTS, [plan_id=5899]
+               +- HashAggregate(keys=[hotel_id#13080L, year#13066, month#13067], functions=[finalmerge_count(merge count#13187L) AS count(1)#13091L], output=[hotel_id#13080L, year#13066, month#13067, items_count#13024L])
+                  +- Exchange hashpartitioning(hotel_id#13080L, year#13066, month#13067, 200), ENSURE_REQUIREMENTS, [plan_id=5896]
+                     +- HashAggregate(keys=[hotel_id#13080L, year#13066, month#13067], functions=[partial_count(1) AS count#13187L], output=[hotel_id#13080L, year#13066, month#13067, count#13187L])
+                        +- Project [hotel_id#13080L, year#13066, month#13067]
+                           +- BroadcastNestedLoopJoin BuildLeft, Cross, ((cast(srch_ci#13081 as date) <= month_lastday#13036) AND (cast(srch_co#13082 as date) >= month_firstday#13035))
+                              :- Exchange SinglePartition, EXECUTOR_BROADCAST, [plan_id=5891]
+                              :  +- HashAggregate(keys=[year#13066, month#13067, month_firstday#13035, month_lastday#13036], functions=[], output=[year#13066, month#13067, month_firstday#13035, month_lastday#13036])
+                              :     +- Exchange hashpartitioning(year#13066, month#13067, month_firstday#13035, month_lastday#13036, 200), ENSURE_REQUIREMENTS, [plan_id=5888]
+                              :        +- HashAggregate(keys=[year#13066, month#13067, month_firstday#13035, month_lastday#13036], functions=[], output=[year#13066, month#13067, month_firstday#13035, month_lastday#13036])
+                              :           +- Project [year#13066, month#13067, make_date(year#13066, month#13067, 1, false) AS month_firstday#13035, last_day(make_date(year#13066, month#13067, 1, false)) AS month_lastday#13036]
+                              :              +- Filter (((isnotnull(year#13066) AND isnotnull(month#13067)) AND isnotnull(last_day(make_date(year#13066, month#13067, 1, false)))) AND isnotnull(make_date(year#13066, month#13067, 1, false)))
+                              :                 +- FileScan parquet spark_catalog.datalake.hotelweather[year#13066,month#13067] Batched: true, DataFilters: [isnotnull(year#13066), isnotnull(month#13067), isnotnull(last_day(make_date(year#13066, month#13..., Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/h..., PartitionFilters: [], PushedFilters: [IsNotNull(year), IsNotNull(month)], ReadSchema: struct<year:int,month:int>
+                              +- Filter (isnotnull(srch_ci#13081) AND isnotnull(srch_co#13082))
+                                 +- FileScan parquet spark_catalog.datalake.expedia_silver[hotel_id#13080L,srch_ci#13081,srch_co#13082] Batched: true, DataFilters: [isnotnull(srch_ci#13081), isnotnull(srch_co#13082)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[abfss://data@sttpdcsp02westeurope.dfs.core.windows.net/datalake/e..., PartitionFilters: [], PushedFilters: [IsNotNull(srch_ci), IsNotNull(srch_co)], ReadSchema: struct<hotel_id:bigint,srch_ci:string,srch_co:string>
