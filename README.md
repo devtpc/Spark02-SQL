@@ -148,7 +148,7 @@ At the advanced option set the storage account's key at the sparkconfig, and the
 
 ## Running the app
 
-Upload [the notebook](/notebooks/sparktask_02.sql) as a source to the Azure Databricks portal to your workspace, and run the cells. The notebook can be run cell-by-cell, or all cells can be run together. The executed notebook can be viewed with the result visualizations [here (HTML version)](/notebooks/sparktask_02.html) without Databricks .
+Upload [the notebook](/notebooks/sparktask_02.sql) as a source to the Azure Databricks portal to your workspace, and run the cells. The notebook can be run cell-by-cell, or all cells can be run together. The executed notebook can be viewed with the result visualizations [here (HTML version)](https://devtpc.github.io/Spark02-SQL/notebooks/sparktask_02.html) without Databricks .
 
 The notebook is documented in detail with comments, so here I include only the main steps. 
 
@@ -194,7 +194,7 @@ Similarly to Task 1, one complicated query was analyzed. The query containes a C
 
 This time the Execution plan is not completely linear:
 
-![Visual Directed Acyclic Graph 2](/texts/explains/task1/task2_dag.png)
+![Visual Directed Acyclic Graph 2](/texts/explains/task2/task2_dag.png)
 
 Here are the [execution plan](/texts/explains/task2/task2_plan.txt) and the [executed plan](/texts/explains/task2/task2_result.txt)
 
@@ -231,7 +231,7 @@ This query's [execution plan](/texts/explains/task3/task3_s2_plan.txt) and [exec
 
 #### Result, Visualization
 
-The main result of the query is a row for every extended stay booking, containing the average temperatures and the weather trends. We visualize tre result with a scatterplot, and 2 histograms:
+The main result of the query is a row for every extended stay booking, containing the average temperatures and the weather trends. We visualize the result with a scatterplot, and 2 histograms:
 
 
 ![Task 3 viz](/screenshots/img_viz_task3.png)
