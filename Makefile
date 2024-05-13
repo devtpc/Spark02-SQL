@@ -1,5 +1,4 @@
-	@cd configscripts && \
-	sh refresh_confs.shCONFIG = ./configscripts/config.conf
+CONFIG = ./configscripts/config.conf
 include ${CONFIG}
 
 
@@ -36,19 +35,7 @@ uploaddata:
 	sh upload_data.sh
 
 
-
-#destroy cluster with terraform. Only the cluster, the data storage part remains	
-destroy-cluster:
-	@cd terraform && \
-	terraform destroy -auto-approve --target databricks_cluster.bdcc
-
 #destroy databricks workspace with terraform. Only the workspace, the data storage part remains	
 destroy-databricks-ws:
 	@cd terraform && \
 	terraform destroy -auto-approve --target azurerm_databricks_workspace.bdcc
-
-
-
-readtf:
-	@cd configscripts && \
-	sh read_terraform.sh
